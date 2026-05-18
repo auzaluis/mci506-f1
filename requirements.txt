@@ -1,0 +1,4 @@
+# Paso 2: Dependencias del proyecto
+fastf1
+pandas
+pyarrow
