@@ -4,7 +4,7 @@
 Descarga y guarda en formato parquet:
 - El calendario (schedule) de la temporada.
 - Para los primeros rounds del calendario: resultados y vueltas (laps) de la
-  sesión indicada, agregando las columnas year y EventName a cada df.
+  sesión indicada, agregando las columnas ``year`` y ``EventName`` a cada df.
 """
 
 import sys
@@ -16,7 +16,7 @@ sys.path.insert(0, str(ROOT))
 import fastf1
 import pandas as pd
 
-from utils import CACHE_DIR, RAW_DIR, slug, to_parquet
+from utils import CACHE_DIR, DEV_MODE, RAW_DIR, slug, to_parquet
 
 # --- Configuración --------------------------------------------------------
 YEAR = 2026
@@ -27,6 +27,9 @@ SESSION = "R"
 def extract_schedule(year: int) -> pd.DataFrame:
     print(f"[schedule] Descargando schedule {year}...")
     schedule = fastf1.get_event_schedule(year)
+    if DEV_MODE:
+        schedule = schedule.head(10)
+        print(f"[schedule] DEV MODE — limitado a 10 filas")
     to_parquet(schedule, RAW_DIR / f"schedule_{year}.parquet")
     print(f"[schedule] OK — {len(schedule)} eventos")
     return schedule
@@ -42,18 +45,24 @@ def extract_session(year: int, round_number: int, session_id: str = SESSION) -> 
     results = pd.DataFrame(session.results)
     results["year"] = year
     results["EventName"] = event_name
+    if DEV_MODE:
+        results = results.head(10)
     to_parquet(results, RAW_DIR / f"results_{year}_{slug(event_name)}.parquet")
 
     try:
         laps = pd.DataFrame(session.laps)
         laps["year"] = year
         laps["EventName"] = event_name
+        if DEV_MODE:
+            laps = laps.head(10)
         to_parquet(laps, RAW_DIR / f"laps_{year}_{slug(event_name)}.parquet")
         laps_count = len(laps)
     except Exception as e:
         print(f"[round {round_number}] WARNING — laps no disponibles: {e}")
         laps_count = 0
 
+    if DEV_MODE:
+        print(f"[round {round_number}] DEV MODE — limitado a 10 filas")
     print(f"[round {round_number}] OK — {event_name}: {len(results)} resultados, {laps_count} vueltas")
 
 
