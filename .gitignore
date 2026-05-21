@@ -2,3 +2,5 @@
 __pycache__
 data/cache/
 data/raw/
+.env
+studious-booth-496823-e7-da08a6ef8ee4.json

@@ -1,11 +1,11 @@
-name: Extract F1 Data
+name: Extract and Load F1 Data
 
 on:
   push:
   workflow_dispatch:
 
 jobs:
-  extract:
+  extract_load:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,5 +24,13 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run extraction
+      - name: Extract
+        env:
+          DEV_MODE: ${{ github.ref_name != 'main' && 'true' || 'false' }}
         run: python scripts/extract.py
+
+      - name: Load to GCS
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+          DEV_MODE: ${{ github.ref_name != 'main' && 'true' || 'false' }}
+        run: python scripts/load.py
