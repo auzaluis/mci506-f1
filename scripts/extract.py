@@ -19,7 +19,7 @@ import pandas as pd
 from utils import CACHE_DIR, DEV_MODE, RAW_DIR, slug, to_parquet
 
 # --- Configuración --------------------------------------------------------
-YEAR = 2026
+YEARS = [2025, 2026]
 ROUNDS = [1, 2, 3]
 SESSION = "R"
 
@@ -70,9 +70,10 @@ def main() -> None:
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     fastf1.Cache.enable_cache(CACHE_DIR)
 
-    extract_schedule(YEAR)
-    for round_number in ROUNDS:
-        extract_session(YEAR, round_number, SESSION)
+    for year in YEARS:
+        extract_schedule(year)
+        for round_number in ROUNDS:
+            extract_session(year, round_number, SESSION)
 
     print("\nExtracción completada.")
 

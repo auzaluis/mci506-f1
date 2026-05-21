@@ -19,20 +19,24 @@ from utils import GCS_BUCKET, RAW_DIR, RAW_PREFIX, gcs_client
 
 load_dotenv()
 
-# Patrón: {dataset}_{year}_{slug}.parquet  o  {dataset}_{year}.parquet
-_FILENAME_RE = re.compile(r"^(?P<dataset>[a-z]+)_(?P<year>\d{4})")
+# Patrón: {dataset}_{year}_{eventname}.parquet  o  {dataset}_{year}.parquet
+_FILENAME_RE = re.compile(r"^(?P<dataset>[a-z]+)_(?P<year>\d{4})(?:_(?P<eventname>.+))?\.parquet$")
 
 
 def _gcs_path(filename: str) -> str:
-    """Extrae dataset y year del nombre de archivo y arma el path Hive-style.
+    """Extrae dataset, year y eventname del nombre de archivo y arma el path Hive-style.
 
-    Ejemplo: results_2026_Bahrain.parquet → raw/results/year=2026/results_2026_Bahrain.parquet
+    results_2026_bahrain-grand-prix.parquet → raw/results/year=2026/eventname=bahrain-grand-prix/results_2026_bahrain-grand-prix.parquet
+    schedule_2026.parquet                   → raw/schedule/year=2026/schedule_2026.parquet
     """
     m = _FILENAME_RE.match(filename)
     if not m:
         raise ValueError(f"Nombre de archivo inesperado: {filename}")
     dataset = m.group("dataset")
     year = m.group("year")
+    eventname = m.group("eventname")
+    if eventname:
+        return f"{RAW_PREFIX}/{dataset}/year={year}/eventname={eventname}/{filename}"
     return f"{RAW_PREFIX}/{dataset}/year={year}/{filename}"
 
 
